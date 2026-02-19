@@ -6,6 +6,7 @@ import (
 	"gorm.io/gorm"
 )
 
+// Order represents a customer order.
 type Order struct {
 	ID          uint           `json:"id" gorm:"primaryKey"`
 	UserID      uint           `json:"user_id" gorm:"not null"`
@@ -20,8 +21,10 @@ type Order struct {
 	OrderItems []OrderItem `json:"order_items"`
 }
 
+// OrderStatus represents the current status of an order.
 type OrderStatus string
 
+// Order status constants.
 const (
 	OrderStatusPending   OrderStatus = "pending"
 	OrderStatusConfirmed OrderStatus = "confirmed"
@@ -30,6 +33,7 @@ const (
 	OrderStatusCancelled OrderStatus = "cancelled"
 )
 
+// OrderItem represents a single item within an order.
 type OrderItem struct {
 	ID        uint           `json:"id" gorm:"primaryKey"`
 	OrderID   uint           `json:"order_id" gorm:"not null"`
@@ -44,6 +48,7 @@ type OrderItem struct {
 	Product Product `json:"product"`
 }
 
+// Cart represents a user's shopping cart.
 type Cart struct {
 	ID        uint           `json:"id" gorm:"primaryKey"`
 	UserID    uint           `json:"user_id" gorm:"uniqueIndex;not null"`
@@ -55,6 +60,7 @@ type Cart struct {
 	CartItems []CartItem `json:"cart_items"`
 }
 
+// CartItem represents a single item within a cart.
 type CartItem struct {
 	ID        uint           `json:"id" gorm:"primaryKey"`
 	CartID    uint           `json:"cart_id" gorm:"not null"`

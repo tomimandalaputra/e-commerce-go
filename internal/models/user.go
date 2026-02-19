@@ -6,6 +6,7 @@ import (
 	"gorm.io/gorm"
 )
 
+// User represents a user account in the system.
 type User struct {
 	ID        int            `json:"id" grom:"primaryKey"`
 	Email     string         `json:"email" grom:"uniqueIndex;not null"`
@@ -25,13 +26,16 @@ type User struct {
 	Cart          Cart           `json:"-"`
 }
 
+// UserRole represents the role of a user.
 type UserRole string
 
+// User role constants.
 const (
 	UserRoleAdmin    UserRole = "admin"
 	UserRoleCustomer UserRole = "customer"
 )
 
+// RefreshToken represents a JWT refresh token for a user.
 type RefreshToken struct {
 	ID        uint           `json:"id" gorm:"primaryKey"`
 	UserID    uint           `json:"user_id" gorm:"not null"`

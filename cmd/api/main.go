@@ -24,7 +24,12 @@ func main() {
 	if err != nil {
 		log.Fatal().Err(err).Msg("Failed to get database connection")
 	}
-	defer mainDB.Close()
+
+	defer func() {
+		if err := mainDB.Close(); err != nil {
+			log.Error().Err(err).Msg("Failed to close database connection")
+		}
+	}()
 
 	gin.SetMode(cfg.Server.GinMode)
 

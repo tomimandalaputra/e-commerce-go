@@ -8,6 +8,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// New creates and configures a new zerolog Logger instance.
 func New() zerolog.Logger {
 	zerolog.TimeFieldFormat = time.RFC3339
 
