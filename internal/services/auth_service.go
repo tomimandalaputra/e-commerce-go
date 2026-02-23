@@ -30,7 +30,7 @@ func (s *AuthService) Register(req *dto.RegisterRequest) (*dto.AuthResponse, err
 	err := s.db.Where("email = ?", req.Email).First(&existingUser).Error
 
 	if err != nil {
-		return nil, errors.New("User not found")
+		return nil, errors.New("user not found")
 	}
 
 	// Hash Password
@@ -68,11 +68,11 @@ func (s *AuthService) Login(req *dto.LoginRequest) (*dto.AuthResponse, error) {
 	err := s.db.Where("email = ? AND is_active = ?", req.Email, true).First(&user).Error
 
 	if err != nil {
-		return nil, errors.New("Invalid credentials")
+		return nil, errors.New("invalid credentials")
 	}
 
 	if !utils.CheckPassword(req.Password, user.Password) {
-		return nil, errors.New("Invalid credentials")
+		return nil, errors.New("invalid credentials")
 	}
 
 	return s.generateAuthResponse(&user)
@@ -81,17 +81,17 @@ func (s *AuthService) Login(req *dto.LoginRequest) (*dto.AuthResponse, error) {
 func (s *AuthService) RefreshToken(req *dto.RefreshTokenRequest) (*dto.AuthResponse, error) {
 	claims, err := utils.ValidateToken(req.RefreshToken, s.config.JWT.Secret)
 	if err != nil {
-		return nil, errors.New("Invalid refresh token")
+		return nil, errors.New("invalid refresh token")
 	}
 
 	var refreshToken models.RefreshToken
 	if err := s.db.Where("token = ? AND expires_at > ?", req.RefreshToken, time.Now()).First(&refreshToken).Error; err != nil {
-		return nil, errors.New("Refresh token not found or expired")
+		return nil, errors.New("refresh token not found or expired")
 	}
 
 	var user models.User
 	if err := s.db.First(&user, claims.UserID).Error; err != nil {
-		return nil, errors.New("User not found")
+		return nil, errors.New("user not found")
 	}
 
 	s.db.Delete(&refreshToken)
