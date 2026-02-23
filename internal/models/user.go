@@ -8,7 +8,7 @@ import (
 
 // User represents a user account in the system.
 type User struct {
-	ID        int            `json:"id" grom:"primaryKey"`
+	ID        uint           `json:"id" grom:"primaryKey"`
 	Email     string         `json:"email" grom:"uniqueIndex;not null"`
 	Password  string         `json:"-" grom:"not null"`
 	FirstName string         `json:"first_name" grom:"not null"`
