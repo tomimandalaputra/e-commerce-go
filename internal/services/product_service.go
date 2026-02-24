@@ -80,3 +80,7 @@ func (s *ProductService) UpdateCategory(id uint, req *dto.UpdateCategoryRequest)
 		UpdatedAt:   category.UpdatedAt,
 	}, nil
 }
+
+func (s *ProductService) DeleteCategory(id uint) error {
+	return s.db.Delete(&models.Category{}, id).Error
+}
