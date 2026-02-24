@@ -18,6 +18,7 @@ func (s *Server) register(c *gin.Context) {
 	response, err := authService.Register(&req)
 	if err != nil {
 		utils.BadRequestResponse(c, "Registration failed", err)
+		return
 	}
 
 	utils.CreatedResponse(c, "User registered successfully", response)

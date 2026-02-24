@@ -8,17 +8,17 @@ import (
 
 // User represents a user account in the system.
 type User struct {
-	ID        uint           `json:"id" grom:"primaryKey"`
-	Email     string         `json:"email" grom:"uniqueIndex;not null"`
-	Password  string         `json:"-" grom:"not null"`
-	FirstName string         `json:"first_name" grom:"not null"`
-	LastName  string         `json:"last_name" grom:"not null"`
-	Phone     string         `json:"phone" grom:"not null"`
-	IsActive  bool           `json:"is_active" grom:"default:true"`
-	Role      UserRole       `json:"role" grom:"default:customer"`
+	ID        uint           `json:"id" gorm:"primaryKey"`
+	Email     string         `json:"email" gorm:"uniqueIndex;not null"`
+	Password  string         `json:"-" gorm:"not null"`
+	FirstName string         `json:"first_name" gorm:"not null"`
+	LastName  string         `json:"last_name" gorm:"not null"`
+	Phone     string         `json:"phone" gorm:"not null"`
+	IsActive  bool           `json:"is_active" gorm:"default:true"`
+	Role      UserRole       `json:"role" gorm:"default:customer"`
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`
-	DeletedAt gorm.DeletedAt `json:"-" grom:"index"`
+	DeletedAt gorm.DeletedAt `json:"-" gorm:"index"`
 
 	// Relationships
 	RefreshTokens []RefreshToken `json:"-"`

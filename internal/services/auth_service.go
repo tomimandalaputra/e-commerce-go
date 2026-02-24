@@ -17,57 +17,52 @@ type AuthService struct {
 	config *config.Config
 }
 
-func NewAuthService(db *gorm.DB, cfg *config.Config) *AuthService {
+func NewAuthService(db *gorm.DB, config *config.Config) *AuthService {
 	return &AuthService{
 		db:     db,
-		config: cfg,
+		config: config,
 	}
 }
 
 func (s *AuthService) Register(req *dto.RegisterRequest) (*dto.AuthResponse, error) {
-	// CHeck if user exists
+	// Check if user exists
 	var existingUser models.User
-	err := s.db.Where("email = ?", req.Email).First(&existingUser).Error
-
-	if err != nil {
-		return nil, errors.New("user not found")
+	if err := s.db.Where("email  = ?", req.Email).First(&existingUser).Error; err == nil {
+		return nil, errors.New("you cannot register with this email")
 	}
-
-	// Hash Password
+	// Hash password
 	hashedPassword, err := utils.HashPassword(req.Password)
 	if err != nil {
 		return nil, err
 	}
 
-	// Create User
+	// Create user
 	user := models.User{
 		Email:     req.Email,
 		Password:  hashedPassword,
 		FirstName: req.FirstName,
 		LastName:  req.LastName,
 		Phone:     req.Phone,
+		IsActive:  true,
 		Role:      models.UserRoleCustomer,
 	}
-
 	if err := s.db.Create(&user).Error; err != nil {
 		return nil, err
 	}
-
-	// Create a Cart
+	// create a cart
 	cart := models.Cart{UserID: user.ID}
 	if err := s.db.Create(&cart).Error; err != nil {
 		fmt.Println("Unable to create cart")
 	}
 
-	// Generate token
+	// generate token
 	return s.generateAuthResponse(&user)
+
 }
 
 func (s *AuthService) Login(req *dto.LoginRequest) (*dto.AuthResponse, error) {
 	var user models.User
-	err := s.db.Where("email = ? AND is_active = ?", req.Email, true).First(&user).Error
-
-	if err != nil {
+	if err := s.db.Where("email = ? AND is_active = ?", req.Email, true).First(&user).Error; err != nil {
 		return nil, errors.New("invalid credentials")
 	}
 
@@ -110,7 +105,6 @@ func (s *AuthService) generateAuthResponse(user *models.User) (*dto.AuthResponse
 		user.Email,
 		string(user.Role),
 	)
-
 	if err != nil {
 		return nil, err
 	}
@@ -136,4 +130,5 @@ func (s *AuthService) generateAuthResponse(user *models.User) (*dto.AuthResponse
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
 	}, nil
+
 }
