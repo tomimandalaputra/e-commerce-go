@@ -91,6 +91,7 @@ func (s *Server) updateProfile(c *gin.Context) {
 	var req dto.UpdateProfileRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		utils.BadRequestResponse(c, "Invalid request data", err)
+		return
 	}
 
 	userService := services.NewUserService(s.db)
