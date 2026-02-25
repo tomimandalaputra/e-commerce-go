@@ -15,6 +15,7 @@ import (
 	"github.com/tomimandalaputra/e-commerce-go/internal/config"
 	"github.com/tomimandalaputra/e-commerce-go/internal/database"
 	"github.com/tomimandalaputra/e-commerce-go/internal/logger"
+	"github.com/tomimandalaputra/e-commerce-go/internal/providers"
 	"github.com/tomimandalaputra/e-commerce-go/internal/server"
 	"github.com/tomimandalaputra/e-commerce-go/internal/services"
 )
@@ -47,8 +48,9 @@ func main() {
 	authService := services.NewAuthService(db, cfg)
 	productService := services.NewProductService(db)
 	userService := services.NewUserService(db)
+	uploadService := services.NewUploadService(providers.NewLocalUploadProvider(cfg.Upload.Path))
 
-	srv := server.New(cfg, db, &log, authService, productService, userService)
+	srv := server.New(cfg, db, &log, authService, productService, userService, uploadService)
 	router := srv.SetupRoutes()
 
 	httpServer := &http.Server{

@@ -153,3 +153,30 @@ func (s *Server) deleteProduct(c *gin.Context) {
 
 	utils.SuccessResponse(c, "Product deleted successfully", nil)
 }
+
+func (s *Server) uploadProductImage(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
+	if err != nil {
+		utils.BadRequestResponse(c, "Invalid product ID", err)
+		return
+	}
+
+	file, err := c.FormFile("image")
+	if err != nil {
+		utils.BadRequestResponse(c, "No file uploaded", err)
+		return
+	}
+
+	url, err := s.uploadService.UploadProductImage(uint(id), file)
+	if err != nil {
+		utils.InternalServerErrorResponse(c, "Failed to upload image", err)
+		return
+	}
+
+	if err := s.productService.AddProductImage(uint(id), url, file.Filename); err != nil {
+		utils.InternalServerErrorResponse(c, "Failed to save image record", err)
+		return
+	}
+
+	utils.SuccessResponse(c, "Image uploaded successfully", map[string]string{"url": url})
+}
