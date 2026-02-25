@@ -1,0 +1,35 @@
+:80 {
+
+    root * /var/www
+
+    @uploads path /uploads/*
+
+    handle @uploads {
+
+        @local file {path}
+
+        handle @local {
+            file_server
+        }
+
+        handle {
+            @s3path path_regexp s3path ^/uploads/(.*)$
+            rewrite @s3path /ecommerce-uploads/{re.s3path.1}
+            reverse_proxy localstack:4566
+
+            @png path *.png
+            header @png Content-Type image/png
+            @jpg path *.jpg *.jpeg
+            header @jpg Content-Type image/jpeg
+            @gif path *.gif
+            header @gif Content-Type image/gif
+            @webp path *.webp
+            header @webp Content-Type image/webp
+
+            header {
+                -Content-Disposition
+                Content-Disposition "inline"
+            }
+        }
+    }
+}

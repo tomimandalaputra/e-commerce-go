@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/google/uuid"
+
 	"github.com/tomimandalaputra/e-commerce-go/internal/interfaces"
 )
 
@@ -18,13 +20,14 @@ func NewUploadService(provider interfaces.UploadProvider) *UploadService {
 }
 
 func (s *UploadService) UploadProductImage(productID uint, file *multipart.FileHeader) (string, error) {
-
 	ext := strings.ToLower(filepath.Ext(file.Filename))
 	if !isValidImageExt(ext) {
 		return "", fmt.Errorf("invalid file type: %s", ext)
 	}
 
-	path := fmt.Sprintf("products/%d/%s", productID, file.Filename)
+	newFileName := uuid.New().String()
+
+	path := fmt.Sprintf("products/%d/%s%s", productID, newFileName, ext)
 
 	return s.provider.UploadFile(file, path)
 }

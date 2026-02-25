@@ -58,10 +58,13 @@ func (p *S3Provider) UploadFile(file *multipart.FileHeader, path string) (string
 	}
 	defer func() { _ = src.Close() }()
 
+	contentType := file.Header.Get("Content-Type")
+
 	_, err = p.manager.UploadObject(context.TODO(), &transfermanager.UploadObjectInput{
-		Bucket: aws.String(p.bucket),
-		Key:    aws.String(path),
-		Body:   src,
+		Bucket:      aws.String(p.bucket),
+		Key:         aws.String(path),
+		Body:        src,
+		ContentType: aws.String(contentType),
 	})
 
 	if err != nil {

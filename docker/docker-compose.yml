@@ -27,6 +27,17 @@ services:
       - ecommerce_localstack_dev_data:/var/lib/localstack
       - ./init/aws/init-localstack.sh:/etc/localstack/init/ready.d/init.sh
 
+  cdn:
+    image: caddy:alpine
+    container_name: ecommerce-cdn-dev
+    ports:
+      - "8081:80"
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile
+      - ../uploads:/var/www/uploads
+    depends_on:
+      - localstack
+
 volumes:
   ecommerce_db_dev_data:
   ecommerce_localstack_dev_data:
