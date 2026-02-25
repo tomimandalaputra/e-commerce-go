@@ -25,6 +25,7 @@ services:
       - "4566:4566"  # LocalStack Gateway
     volumes:
       - ecommerce_localstack_dev_data:/var/lib/localstack
+      - ./init/aws/init-localstack.sh:/etc/localstack/init/ready.d/init.sh
 
 volumes:
   ecommerce_db_dev_data:

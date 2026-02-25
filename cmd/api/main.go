@@ -14,6 +14,7 @@ import (
 
 	"github.com/tomimandalaputra/e-commerce-go/internal/config"
 	"github.com/tomimandalaputra/e-commerce-go/internal/database"
+	"github.com/tomimandalaputra/e-commerce-go/internal/interfaces"
 	"github.com/tomimandalaputra/e-commerce-go/internal/logger"
 	"github.com/tomimandalaputra/e-commerce-go/internal/providers"
 	"github.com/tomimandalaputra/e-commerce-go/internal/server"
@@ -48,7 +49,15 @@ func main() {
 	authService := services.NewAuthService(db, cfg)
 	productService := services.NewProductService(db)
 	userService := services.NewUserService(db)
-	uploadService := services.NewUploadService(providers.NewLocalUploadProvider(cfg.Upload.Path))
+
+	var uploadProvider interfaces.UploadProvider
+	if cfg.Upload.UploadProvider == "s3" {
+		uploadProvider = providers.NewS3Provider(cfg)
+	} else {
+		uploadProvider = providers.NewLocalUploadProvider(cfg.Upload.Path)
+	}
+
+	uploadService := services.NewUploadService(uploadProvider)
 
 	srv := server.New(cfg, db, &log, authService, productService, userService, uploadService)
 	router := srv.SetupRoutes()
