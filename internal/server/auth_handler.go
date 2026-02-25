@@ -3,7 +3,6 @@ package server
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/tomimandalaputra/e-commerce-go/internal/dto"
-	"github.com/tomimandalaputra/e-commerce-go/internal/services"
 	"github.com/tomimandalaputra/e-commerce-go/internal/utils"
 )
 
@@ -14,8 +13,7 @@ func (s *Server) register(c *gin.Context) {
 		return
 	}
 
-	authService := services.NewAuthService(s.db, s.config)
-	response, err := authService.Register(&req)
+	response, err := s.authService.Register(&req)
 	if err != nil {
 		utils.BadRequestResponse(c, "Registration failed", err)
 		return
@@ -30,8 +28,8 @@ func (s *Server) login(c *gin.Context) {
 		utils.BadRequestResponse(c, "Invalid request data", err)
 		return
 	}
-	authService := services.NewAuthService(s.db, s.config)
-	response, err := authService.Login(&req)
+
+	response, err := s.authService.Login(&req)
 	if err != nil {
 		utils.UnauthorizedResponse(c, "Login failed")
 		return
@@ -47,8 +45,7 @@ func (s *Server) refreshToken(c *gin.Context) {
 		return
 	}
 
-	authService := services.NewAuthService(s.db, s.config)
-	response, err := authService.RefreshToken(&req)
+	response, err := s.authService.RefreshToken(&req)
 	if err != nil {
 		utils.UnauthorizedResponse(c, "Token refresh failed")
 		return
@@ -64,8 +61,7 @@ func (s *Server) logout(c *gin.Context) {
 		return
 	}
 
-	authService := services.NewAuthService(s.db, s.config)
-	if err := authService.Logout(req.RefreshToken); err != nil {
+	if err := s.authService.Logout(req.RefreshToken); err != nil {
 		utils.InternalServerErrorResponse(c, "Logout failed", err)
 		return
 	}
@@ -75,8 +71,7 @@ func (s *Server) logout(c *gin.Context) {
 
 func (s *Server) getProfile(c *gin.Context) {
 	userID := c.GetUint("user_id")
-	userService := services.NewUserService(s.db)
-	profile, err := userService.GetProfile(userID)
+	profile, err := s.userService.GetProfile(userID)
 	if err != nil {
 		utils.NotFoundResponse(c, "User not found")
 		return
@@ -94,8 +89,7 @@ func (s *Server) updateProfile(c *gin.Context) {
 		return
 	}
 
-	userService := services.NewUserService(s.db)
-	profile, err := userService.UpdateProfile(userID, &req)
+	profile, err := s.userService.UpdateProfile(userID, &req)
 	if err != nil {
 		utils.InternalServerErrorResponse(c, "Failed to update profile", err)
 		return

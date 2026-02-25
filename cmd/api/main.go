@@ -16,6 +16,7 @@ import (
 	"github.com/tomimandalaputra/e-commerce-go/internal/database"
 	"github.com/tomimandalaputra/e-commerce-go/internal/logger"
 	"github.com/tomimandalaputra/e-commerce-go/internal/server"
+	"github.com/tomimandalaputra/e-commerce-go/internal/services"
 )
 
 func main() {
@@ -43,7 +44,11 @@ func main() {
 
 	gin.SetMode(cfg.Server.GinMode)
 
-	srv := server.New(cfg, db, &log)
+	authService := services.NewAuthService(db, cfg)
+	productService := services.NewProductService(db)
+	userService := services.NewUserService(db)
+
+	srv := server.New(cfg, db, &log, authService, productService, userService)
 	router := srv.SetupRoutes()
 
 	httpServer := &http.Server{
