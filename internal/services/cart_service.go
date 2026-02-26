@@ -19,6 +19,7 @@ func NewCartService(db *gorm.DB) *CartService {
 func (s *CartService) GetCart(userID uint) (*dto.CartResponse, error) {
 	var cart models.Cart
 	err := s.db.Preload("CartItems.Product.Category").
+		Preload("CartItems.Product.Images").
 		Where("user_id = ?", userID).First(&cart).Error
 	if err != nil {
 		return nil, err
@@ -95,8 +96,9 @@ func (s *CartService) UpdateCartItem(userID, itemID uint, req *dto.UpdateCartIte
 }
 
 func (s *CartService) RemoveFromCart(userID, itemID uint) error {
-	return s.db.Joins("JOIN carts ON cart_items.cart_id = carts.id").
-		Where("cart_items.id = ? AND carts.user_id = ?", itemID, userID).
+	return s.db.Where("id = ? AND cart_id IN (?)", itemID,
+		s.db.Select("id").Table("carts").
+			Where("user_id = ?", userID)).
 		Delete(&models.CartItem{}).Error
 }
 
@@ -107,6 +109,17 @@ func (s *CartService) convertToCartResponse(cart *models.Cart) *dto.CartResponse
 	for i := range cart.CartItems {
 		subtotal := float64(cart.CartItems[i].Quantity) * cart.CartItems[i].Product.Price
 		total += subtotal
+
+		images := make([]dto.ProductImageResponse, len(cart.CartItems[i].Product.Images))
+		for j, img := range cart.CartItems[i].Product.Images {
+			images[j] = dto.ProductImageResponse{
+				ID:        img.ID,
+				URL:       img.URL,
+				AltText:   img.AltText,
+				IsPrimary: img.IsPrimary,
+				CreatedAt: img.CreatedAt,
+			}
+		}
 
 		cartItems[i] = dto.CartItemResponse{
 			ID: cart.CartItems[i].ID,
@@ -125,6 +138,7 @@ func (s *CartService) convertToCartResponse(cart *models.Cart) *dto.CartResponse
 					Description: cart.CartItems[i].Product.Category.Description,
 					IsActive:    cart.CartItems[i].Product.Category.IsActive,
 				},
+				Images: images,
 			},
 			Quantity: cart.CartItems[i].Quantity,
 			Subtotal: subtotal,
