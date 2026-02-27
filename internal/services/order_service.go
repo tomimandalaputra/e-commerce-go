@@ -63,31 +63,31 @@ func (s *OrderService) CreateOrder(userID uint) (*dto.OrderResponse, error) {
 				return err
 			}
 
-			// Create order
-			order := models.Order{
-				UserID:      userID,
-				Status:      models.OrderStatusPending,
-				TotalAmount: totalAmount,
-				OrderItems:  orderItems,
-			}
-
-			if err := tx.Create(&order).Error; err != nil {
-				return err
-			}
-
-			// Clear cart
-			if err := tx.Where("cart_id = ?", cart.ID).Delete(&models.CartItem{}).Error; err != nil {
-				return err
-			}
-
-			response, err := s.getOrderResponse(tx, order.ID)
-			if err != nil {
-				return err
-			}
-
-			orderResponse = response
 		}
 
+		// Create order
+		order := models.Order{
+			UserID:      userID,
+			Status:      models.OrderStatusPending,
+			TotalAmount: totalAmount,
+			OrderItems:  orderItems,
+		}
+
+		if err := tx.Create(&order).Error; err != nil {
+			return err
+		}
+
+		// Clear cart
+		if err := tx.Where("cart_id = ?", cart.ID).Delete(&models.CartItem{}).Error; err != nil {
+			return err
+		}
+
+		response, err := s.getOrderResponse(tx, order.ID)
+		if err != nil {
+			return err
+		}
+
+		orderResponse = response
 		return nil // Transaction successful
 	})
 
@@ -119,6 +119,7 @@ func (s *OrderService) GetOrders(userID uint, page, limit int) ([]dto.OrderRespo
 	s.db.Model(&models.Order{}).Where("user_id = ?", userID).Count(&total)
 
 	if err := s.db.Preload("OrderItems.Product.Category").
+		Preload("OrderItems.Product.Images").
 		Where("user_id = ?", userID).
 		Order("created_at DESC").
 		Offset(offset).Limit(limit).
@@ -146,6 +147,7 @@ func (s *OrderService) GetOrders(userID uint, page, limit int) ([]dto.OrderRespo
 func (s *OrderService) GetOrder(userID, orderID uint) (*dto.OrderResponse, error) {
 	var order models.Order
 	if err := s.db.Preload("OrderItems.Product.Category").
+		Preload("OrderItems.Product.Images").
 		Where("id = ? AND user_id = ?", orderID, userID).
 		First(&order).Error; err != nil {
 		return nil, err
@@ -158,7 +160,9 @@ func (s *OrderService) GetOrder(userID, orderID uint) (*dto.OrderResponse, error
 
 func (s *OrderService) getOrderResponse(tx *gorm.DB, orderID uint) (*dto.OrderResponse, error) {
 	var order models.Order
-	if err := tx.Preload("OrderItems.Product.Category").First(&order, orderID).Error; err != nil {
+	if err := tx.Preload("OrderItems.Product.Category").
+		Preload("OrderItems.Product.Images").
+		First(&order, orderID).Error; err != nil {
 		return nil, err
 	}
 
@@ -170,7 +174,19 @@ func (s *OrderService) getOrderResponse(tx *gorm.DB, orderID uint) (*dto.OrderRe
 func (s *OrderService) convertToOrderResponse(order *models.Order) dto.OrderResponse {
 	orderItems := make([]dto.OrderItemResponse, len(order.OrderItems))
 	for i := range order.OrderItems {
-		item := order.OrderItems[i]
+		item := &order.OrderItems[i]
+
+		images := make([]dto.ProductImageResponse, len(item.Product.Images))
+		for j := range item.Product.Images {
+			img := &item.Product.Images[j]
+			images[j] = dto.ProductImageResponse{
+				ID:        img.ID,
+				URL:       img.URL,
+				AltText:   img.AltText,
+				IsPrimary: img.IsPrimary,
+				CreatedAt: img.CreatedAt,
+			}
+		}
 
 		orderItems[i] = dto.OrderItemResponse{
 			ID: item.ID,
@@ -189,6 +205,7 @@ func (s *OrderService) convertToOrderResponse(order *models.Order) dto.OrderResp
 					Description: item.Product.Category.Description,
 					IsActive:    item.Product.Category.IsActive,
 				},
+				Images: images,
 			},
 			Quantity: item.Quantity,
 			Price:    item.Price,
