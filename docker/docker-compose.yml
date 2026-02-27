@@ -12,21 +12,33 @@ services:
     volumes:
       - ecommerce_db_dev_data:/var/lib/postgresql/data
 
-  localstack:
-    image: localstack/localstack:latest
-    container_name: ecommerce-localstack-dev
+  minio:
+    image: minio/minio:latest
+    container_name: ecommerce-minio-dev
     restart: always
     environment:
-      - SERVICES=s3,sqs
-      - DEFAULT_REGION=us-east-1
-      - AWS_ACCESS_KEY_ID=test
-      - AWS_SECRET_ACCESS_KEY=test
-      - DATA_DIR=/tmp/localstack/data
+      MINIO_ROOT_USER: test
+      MINIO_ROOT_PASSWORD: testpassword
     ports:
-      - "4566:4566"  # LocalStack Gateway
+      - "4566:9000"  # S3 API (same port as before for compatibility)
+      - "9001:9001"  # MinIO Console (web UI)
     volumes:
-      - ecommerce_localstack_dev_data:/var/lib/localstack
-      - ./init/aws/init-localstack.sh:/etc/localstack/init/ready.d/init.sh
+      - ecommerce_minio_data:/data
+    command: server /data --console-address ":9001"
+
+  minio-init:
+    image: minio/mc:latest
+    container_name: ecommerce-minio-init
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      sleep 3;
+      mc alias set local http://minio:9000 test testpassword;
+      mc mb local/ecommerce-uploads --ignore-existing;
+      mc anonymous set download local/ecommerce-uploads;
+      echo 'MinIO initialization complete';
+      "
 
   cdn:
     image: caddy:alpine
@@ -38,8 +50,8 @@ services:
       - ./caddy/Caddyfile:/etc/caddy/Caddyfile
       - ../uploads:/var/www/uploads
     depends_on:
-      - localstack
+      - minio
 
 volumes:
   ecommerce_db_dev_data:
-  ecommerce_localstack_dev_data:
+  ecommerce_minio_data:

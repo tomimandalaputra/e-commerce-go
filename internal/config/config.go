@@ -40,7 +40,7 @@ type JWTConfig struct {
 	RefreshTokenExpires time.Duration
 }
 
-// AWSConfig holds the AWS services configuration.
+// AWSConfig holds the configuration for AWS or S3-compatible services (MinIO, LocalStack).
 type AWSConfig struct {
 	Region          string
 	AccessKeyID     string
@@ -87,7 +87,7 @@ func Load() (*Config, error) {
 		AWS: AWSConfig{
 			Region:          getEnv("AWS_REGION", "us-east-1"),
 			AccessKeyID:     getEnv("AWS_ACCESS_KEY_ID", "test"),
-			SecretAccessKey: getEnv("AWS_SECRET_ACCESS_KEY", "test"),
+			SecretAccessKey: getEnv("AWS_SECRET_ACCESS_KEY", "testpassword"),
 			S3Bucket:        getEnv("AWS_S3_BUCKET", "ecommerce-uploads"),
 			S3Endpoint:      getEnv("AWS_S3_ENDPOINT", "http://localhost:4566"),
 		},

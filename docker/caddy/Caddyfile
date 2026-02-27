@@ -1,4 +1,7 @@
 :80 {
+    log {
+        output stdout
+    }
 
     root * /var/www
 
@@ -15,7 +18,7 @@
         handle {
             @s3path path_regexp s3path ^/uploads/(.*)$
             rewrite @s3path /ecommerce-uploads/{re.s3path.1}
-            reverse_proxy localstack:4566
+            reverse_proxy minio:9000
 
             @png path *.png
             header @png Content-Type image/png
