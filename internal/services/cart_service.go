@@ -111,7 +111,8 @@ func (s *CartService) convertToCartResponse(cart *models.Cart) *dto.CartResponse
 		total += subtotal
 
 		images := make([]dto.ProductImageResponse, len(cart.CartItems[i].Product.Images))
-		for j, img := range cart.CartItems[i].Product.Images {
+		for j := range cart.CartItems[i].Product.Images {
+			img := &cart.CartItems[i].Product.Images[j]
 			images[j] = dto.ProductImageResponse{
 				ID:        img.ID,
 				URL:       img.URL,
