@@ -19,6 +19,7 @@ type Server struct {
 	userService    *services.UserService
 	uploadService  *services.UploadService
 	cartService    *services.CartService
+	orderService   *services.OrderService
 }
 
 func New(
@@ -30,6 +31,7 @@ func New(
 	userService *services.UserService,
 	uploadService *services.UploadService,
 	cartService *services.CartService,
+	orderService *services.OrderService,
 ) *Server {
 	return &Server{
 		config:         cfg,
@@ -40,6 +42,7 @@ func New(
 		userService:    userService,
 		uploadService:  uploadService,
 		cartService:    cartService,
+		orderService:   orderService,
 	}
 }
 
