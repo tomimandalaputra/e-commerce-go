@@ -14,6 +14,7 @@ import (
 
 	"github.com/tomimandalaputra/e-commerce-go/internal/config"
 	"github.com/tomimandalaputra/e-commerce-go/internal/database"
+	"github.com/tomimandalaputra/e-commerce-go/internal/events"
 	"github.com/tomimandalaputra/e-commerce-go/internal/interfaces"
 	"github.com/tomimandalaputra/e-commerce-go/internal/logger"
 	"github.com/tomimandalaputra/e-commerce-go/internal/providers"
@@ -64,9 +65,16 @@ func main() {
 		}
 	}()
 
+	ctx := context.Background()
+	eventPublisher, err := events.NewEventPublisher(ctx, &cfg.AWS)
+	if err != nil {
+		log.Error().Err(err).Msg("failed to create event publisher")
+		return
+	}
+
 	gin.SetMode(cfg.Server.GinMode)
 
-	authService := services.NewAuthService(db, cfg)
+	authService := services.NewAuthService(db, cfg, eventPublisher)
 	productService := services.NewProductService(db)
 	userService := services.NewUserService(db)
 	cartService := services.NewCartService(db)

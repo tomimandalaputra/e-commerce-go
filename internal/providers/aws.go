@@ -8,15 +8,15 @@ import (
 	"github.com/aws/aws-sdk-go-v2/credentials"
 )
 
-func CreateAWSConfig(ctx context.Context, endpoint, region string) (aws.Config, error) {
+func CreateAWSConfig(ctx context.Context, endpoint, region, accessKeyID, secretAccessKey string) (aws.Config, error) {
 	var cfg aws.Config
 	var err error
 
 	if endpoint != "" {
 		cfg, err = config.LoadDefaultConfig(ctx, config.WithRegion(region),
 			config.WithBaseEndpoint(endpoint), config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(
-				"test",
-				"test",
+				accessKeyID,
+				secretAccessKey,
 				"",
 			)),
 		)

@@ -40,6 +40,16 @@ services:
       echo 'MinIO initialization complete';
       "
 
+  elasticmq:
+    image: softwaremill/elasticmq:latest
+    container_name: ecommerce-elasticmq-dev
+    restart: always
+    ports:
+      - "4576:9324"  # SQS API
+      - "9325:9325"  # ElasticMQ UI
+    volumes:
+      - ./init/elasticmq/elasticmq.conf:/opt/elasticmq.conf
+
   cdn:
     image: caddy:alpine
     container_name: ecommerce-cdn-dev
